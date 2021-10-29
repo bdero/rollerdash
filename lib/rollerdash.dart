@@ -3,34 +3,39 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:rollerdash/config.dart';
+import 'package:rollerdash/schema.dart';
 
-class RollerSummary {}
+Future<List<StatusModel>> getAllStatuses(List<String> rollerIds) async {
+  var results = <Future<StatusModel>>[];
+  for (var id in rollerIds) {
+    results.add(getStatus(id));
+  }
+  return await Future.wait(results);
+}
 
-// curl -X POST https://autoroll.skia.org/twirp/autoroll.rpc.AutoRollService/GetStatus \
-//      -H 'Content-Type: application/json' -d '{"roller_id": "skia-flutter-autoroll"}'
-//
-// skia-flutter-autoroll
-// clang-linux-flutter-engine
-// clang-mac-flutter-engine
-// dart-sdk-flutter-engine
-// flutter-engine-flutter-autoroll
-// flutter-plugins-flutter-autoroll
-// fuchsia-linux-sdk-flutter-engine
-// fuchsia-mac-sdk-flutter-engine
-void printSummary(Config config) async {
+Future<StatusModel> getStatus(String rollerId) async {
   var response = await http.post(
       Uri.parse(
           'https://autoroll.skia.org/twirp/autoroll.rpc.AutoRollService/GetStatus'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: '{"roller_id": "skia-flutter-autoroll"}');
+      body: '{"roller_id": "$rollerId"}');
 
   if (response.statusCode != 200) {
-    print('http request failed');
-    return;
+    throw Exception(
+        "Failed to fetch `$rollerId` (status code: ${response.statusCode})");
   }
 
   Map<String, dynamic> result = jsonDecode(response.body);
-  List<Map<String, dynamic>> rolls = result['status']?['recent_rolls'];
+  return StatusModel.fromJson(result['status']);
+}
+
+void printSummary(Config config) async {
+  List<StatusModel> statuses = await getAllStatuses(config.rollers);
+  for (var status in statuses) {
+    print("${status.mini_status.roller_id.padLeft(32)} : "
+        "${status.recent_rolls[0].result.padRight(12)}: "
+        "${status.recent_rolls[0].subject}");
+  }
 }

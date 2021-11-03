@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:timeago/timeago.dart' as timeago;
@@ -39,8 +40,7 @@ String decorateMode(String mode, bool bold) {
       mode = "\u001b[31${b}mSTOPPED\u001b[0m 🛑";
       break;
     default:
-      mode += " 🚀";
-      mode = bold ? decorateBold(mode) : mode;
+      mode = "\u001b[32${b}mRUNNING\u001b[0m 🚀";
   }
   return mode;
 }
@@ -56,7 +56,8 @@ String decorateResult(String result, bool bold) {
       break;
     case "SUCCESS":
       result = "  SUCCESS  ";
-      result = bold ? decorateBold(result) : result;
+      // Always color green when bold in this case.
+      result = bold ? "\u001b[32${b}m$result\u001b[0m" : result;
       break;
     default:
       result = bold ? decorateBold(result) : result;
@@ -74,7 +75,7 @@ String decorateTimestamp(String timestamp, bool bold) {
 }
 
 void printSummary(Config config) async {
-  print("Fetching summary...");
+  stderr.writeln("Fetching summary...");
 
   List<StatusModel> statuses = await getAllStatuses(config.rollers);
   for (var status in statuses) {

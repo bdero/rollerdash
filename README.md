@@ -1,6 +1,8 @@
 # rollerdash
 A simple client for querying the Skia AutoRoll service.
 
+![Summary screenshot](screenshots/summary.png)
+
 ## Usage
 
 1. Clone this repository.

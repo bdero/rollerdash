@@ -5,12 +5,14 @@ part 'schema.g.dart';
 @JsonSerializable()
 class StatusModel {
   final MiniStatusModel mini_status;
+  final String issue_url_base;
   final List<RollModel> recent_rolls;
   final List<ManualRollModel> manual_rolls;
   final String error, throttled_until;
 
   StatusModel({
     required this.mini_status,
+    required this.issue_url_base,
     required this.recent_rolls,
     required this.manual_rolls,
     required this.error,

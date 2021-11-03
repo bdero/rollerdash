@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:rollerdash/config.dart';
 import 'package:rollerdash/schema.dart';
@@ -31,6 +32,19 @@ Future<StatusModel> getStatus(String rollerId) async {
   return StatusModel.fromJson(result['status']);
 }
 
+String decorateMode(String mode, bool bold) {
+  var b = bold ? ";1" : "";
+  switch (mode) {
+    case "STOPPED":
+      mode = "\u001b[31${b}mSTOPPED\u001b[0m 🛑";
+      break;
+    default:
+      mode += " 🚀";
+      mode = bold ? decorateBold(mode) : mode;
+  }
+  return mode;
+}
+
 String decorateResult(String result, bool bold) {
   var b = bold ? ";1" : "";
   switch (result) {
@@ -50,21 +64,13 @@ String decorateResult(String result, bool bold) {
   return result;
 }
 
-String decorateMode(String mode, bool bold) {
-  var b = bold ? ";1" : "";
-  switch (mode) {
-    case "STOPPED":
-      mode = "\u001b[31${b}mSTOPPED\u001b[0m 🛑";
-      break;
-    default:
-      mode += " 🚀";
-      mode = bold ? decorateBold(mode) : mode;
-  }
-  return mode;
-}
-
 String decorateBold(String s) {
   return "\u001b[1m" + s + "\u001b[0m";
+}
+
+String decorateTimestamp(String timestamp, bool bold) {
+  var r = timeago.format(DateTime.parse(timestamp));
+  return bold ? decorateBold(r) : r;
 }
 
 void printSummary(Config config) async {
@@ -81,8 +87,8 @@ void printSummary(Config config) async {
         "${(' ' + decorateBold(status.mini_status.roller_id)).padLeft(41, '━')} ┃ "
         "${decorateResult(status.recent_rolls[0].result, true)} ┃ "
         "${decorateMode(mode, true)} ┃ "
-        "Commits behind: ${status.mini_status.num_behind.toString().padLeft(3)} ┃ "
-        "${status.recent_rolls[0].subject}";
+        "${decorateBold('Behind:' + status.mini_status.num_behind.toString().padLeft(3) + ' commit' + (status.mini_status.num_behind == 1 ? " " : "s"))} ┃ "
+        "${decorateBold('https://autoroll.skia.org/r/' + status.mini_status.roller_id)}";
     print(summary);
 
     if (!printFailures) continue;
@@ -95,9 +101,11 @@ void printSummary(Config config) async {
       var line = isLastLine
           ? "  ┗━"
           : " ${roll.result != "IN_PROGRESS" ? "❌━" : "🚧━"}";
-      line += "${(' ' + roll.created).padLeft(33, '━')} ┃ "
+      line +=
+          "${(' ' + decorateTimestamp(roll.created, false)).padLeft(33, '━')} ┃ "
           "${decorateResult(roll.result, false)} ┃ "
-          "${roll.rolling_from.substring(0, 8)} -> ${roll.rolling_to.substring(0, 8)} ┃ ";
+          "${roll.rolling_from.substring(0, 13) + ' ⟶   ' + roll.rolling_to.substring(0, 13)} ┃ "
+          "${status.issue_url_base + roll.id}";
       print(line);
 
       if (isSuccess) break;

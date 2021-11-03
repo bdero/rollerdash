@@ -9,6 +9,7 @@ part of 'schema.dart';
 StatusModel _$StatusModelFromJson(Map<String, dynamic> json) => StatusModel(
       mini_status:
           MiniStatusModel.fromJson(json['mini_status'] as Map<String, dynamic>),
+      issue_url_base: json['issue_url_base'] as String,
       recent_rolls: (json['recent_rolls'] as List<dynamic>)
           .map((e) => RollModel.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -22,6 +23,7 @@ StatusModel _$StatusModelFromJson(Map<String, dynamic> json) => StatusModel(
 Map<String, dynamic> _$StatusModelToJson(StatusModel instance) =>
     <String, dynamic>{
       'mini_status': instance.mini_status,
+      'issue_url_base': instance.issue_url_base,
       'recent_rolls': instance.recent_rolls,
       'manual_rolls': instance.manual_rolls,
       'error': instance.error,

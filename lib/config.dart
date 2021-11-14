@@ -11,15 +11,39 @@ const defaultRollers = [
   "fuchsia-mac-sdk-flutter-engine",
 ];
 
+enum RunMode {
+  print,
+  watch,
+}
+
 class Config {
-  bool verbose = false;
+  RunMode runMode = RunMode.print;
+  int watchIntervalSeconds = 10;
+
   List<String> rollers = defaultRollers;
 
   static Config fromArgs(List<String> arguments) {
-    final parser = ArgParser()..addFlag('verbose', negatable: false, abbr: 'v');
-    ArgResults parsedArgs = parser.parse(arguments);
+    final parser = ArgParser()
+      ..addCommand(
+          'watch',
+          ArgParser()
+            ..addOption(
+              'time',
+              abbr: 't',
+              help: 'The interval to wait between watch updates',
+              valueHelp: 'seconds',
+              defaultsTo: '10',
+            ));
 
-    Config result = Config()..verbose = parsedArgs['verbose'];
+    Config result = Config();
+
+    ArgResults parsedArgs = parser.parse(arguments);
+    if (parsedArgs.command?.name == 'watch') {
+      result.runMode = RunMode.watch;
+      result.watchIntervalSeconds =
+          int.tryParse(parsedArgs.command?['time']) ?? 10;
+    }
+
     return result;
   }
 }

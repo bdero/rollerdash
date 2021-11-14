@@ -20,7 +20,7 @@ enum RunMode {
 
 class Config {
   RunMode runMode = RunMode.print;
-  int watchIntervalSeconds = 10;
+  int watchIntervalSeconds = 30;
 
   List<String> rollers = defaultRollers;
 
@@ -31,7 +31,7 @@ class Config {
         abbr: 't',
         help: 'The interval to wait between watch updates',
         valueHelp: 'seconds',
-        defaultsTo: '10',
+        defaultsTo: '30',
       );
 
     final parser = ArgParser()
@@ -64,7 +64,7 @@ class Config {
     if (parsedArgs.command?.name == 'watch') {
       result.runMode = RunMode.watch;
       result.watchIntervalSeconds =
-          int.tryParse(parsedArgs.command?['time']) ?? 10;
+          int.tryParse(parsedArgs.command?['time']) ?? 30;
     }
 
     return result;

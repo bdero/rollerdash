@@ -47,7 +47,7 @@ String decorateTimestamp(String timestamp, bool bold) {
   return bold ? decorateBold(r) : r;
 }
 
-void printSummary(Config config) async {
+Future<void> printSummary(Config config) async {
   stderr.writeln("Fetching summary...");
 
   List<StatusModel> statuses = await getAllStatuses(config.rollers);
@@ -84,5 +84,25 @@ void printSummary(Config config) async {
 
       if (isSuccess) break;
     }
+  }
+}
+
+void watchSummary(Config config) async {
+  while (true) {
+    print("\u001b[2J"); // Clear the console.
+
+    var time = DateTime.now();
+    print(
+        'Last updated: ${time.hour}:${time.minute}:${time.second}.${time.millisecond}\n');
+
+    try {
+      await printSummary(config);
+    } catch (e, s) {
+      print(
+          'An exception was thrown while attempting to fetch the summary:\n$e');
+      print('Stack trace:\n $s');
+    }
+
+    sleep(Duration(seconds: config.watchIntervalSeconds));
   }
 }

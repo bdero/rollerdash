@@ -7,5 +7,12 @@ void main(List<String> arguments) {
   exitCode = 0;
   final config = Config.fromArgs(arguments);
 
-  console.printSummary(config);
+  switch (config.runMode) {
+    case RunMode.print:
+      console.printSummary(config);
+      break;
+    case RunMode.watch:
+      console.watchSummary(config);
+      break;
+  }
 }

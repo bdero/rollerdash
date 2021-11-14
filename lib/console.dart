@@ -87,13 +87,18 @@ Future<void> printSummary(Config config) async {
   }
 }
 
+void clearScreen() {
+  // Clear the console and move the cursor to 0,0.
+  print("\u001b[2J\u001b[0;0H");
+}
+
 void watchSummary(Config config) async {
   while (true) {
-    print("\u001b[2J"); // Clear the console.
-
     var time = DateTime.now();
     print(
         'Last updated: ${time.hour}:${time.minute}:${time.second}.${time.millisecond}\n');
+
+    clearScreen();
 
     try {
       await printSummary(config);

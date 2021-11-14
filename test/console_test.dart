@@ -1,4 +1,4 @@
-import 'package:rollerdash/rollerdash.dart';
+import 'package:rollerdash/console.dart';
 import 'package:test/test.dart';
 
 void main() {

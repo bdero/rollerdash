@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:args/args.dart';
 
 const defaultRollers = [
@@ -23,21 +25,42 @@ class Config {
   List<String> rollers = defaultRollers;
 
   static Config fromArgs(List<String> arguments) {
+    final watchParser = ArgParser()
+      ..addOption(
+        'time',
+        abbr: 't',
+        help: 'The interval to wait between watch updates',
+        valueHelp: 'seconds',
+        defaultsTo: '10',
+      );
+
     final parser = ArgParser()
-      ..addCommand(
-          'watch',
-          ArgParser()
-            ..addOption(
-              'time',
-              abbr: 't',
-              help: 'The interval to wait between watch updates',
-              valueHelp: 'seconds',
-              defaultsTo: '10',
-            ));
+      ..addCommand('watch', watchParser)
+      ..addFlag('help',
+          abbr: 'h', help: 'Print this help message.', negatable: false);
+
+    void printUsage() {
+      print('Usage: rollerdash [watch]\n');
+      print('Fetch the status of Flutter\'s rollers.\n');
+      print(parser.usage);
+      print(watchParser.usage);
+    }
 
     Config result = Config();
+    ArgResults parsedArgs;
+    try {
+      parsedArgs = parser.parse(arguments);
+    } on FormatException catch (e) {
+      print('$e\n');
+      printUsage();
+      exit(64);
+    }
 
-    ArgResults parsedArgs = parser.parse(arguments);
+    if (parsedArgs['help']) {
+      printUsage();
+      exit(0);
+    }
+
     if (parsedArgs.command?.name == 'watch') {
       result.runMode = RunMode.watch;
       result.watchIntervalSeconds =

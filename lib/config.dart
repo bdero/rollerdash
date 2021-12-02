@@ -11,6 +11,7 @@ const defaultRollers = [
   "flutter-plugins-flutter-autoroll",
   "fuchsia-linux-sdk-flutter-engine",
   "fuchsia-mac-sdk-flutter-engine",
+  "clang-windows-flutter-engine",
 ];
 
 enum RunMode {

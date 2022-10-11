@@ -4,14 +4,12 @@ import 'package:args/args.dart';
 
 const defaultRollers = [
   "skia-flutter-autoroll",
-  "clang-linux-flutter-engine",
-  "clang-mac-flutter-engine",
+  "clang-flutter-engine",
   "dart-sdk-flutter-engine",
   "flutter-engine-flutter-autoroll",
   "flutter-plugins-flutter-autoroll",
   "fuchsia-linux-sdk-flutter-engine",
   "fuchsia-mac-sdk-flutter-engine",
-  "clang-windows-flutter-engine",
 ];
 
 enum RunMode {

@@ -50,6 +50,8 @@ Future<StatusModel> getStatus(String rollerId) async {
         "Failed to fetch `$rollerId` 7 times (status code: ${response.statusCode})");
   }
 
+  client.close();
+
   Map<String, dynamic> result = jsonDecode(response.body);
   return StatusModel.fromJson(result['status']);
 }

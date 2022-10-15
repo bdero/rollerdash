@@ -45,9 +45,9 @@ class Config {
       print('\nUsage: rollerdash [WATCH|DUMP]\n');
       print('Fetch the status of Flutter\'s rollers.\n');
       print(
-          'WATCH: Run the program indefinitely, updating the status at a set interval.');
+          '  WATCH: Run the program indefinitely, updating the status at a set interval.');
       print(
-          'DUMP: Dump the data returned by the roller RPCs to stdout and exit.\n');
+          '   DUMP: Dump the data returned by the roller RPCs to stdout and exit.\n');
       print(parser.usage);
       print(watchParser.usage);
     }

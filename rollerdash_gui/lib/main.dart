@@ -43,6 +43,8 @@ class _MainPageState extends State<MainPage> {
   List<StatusModel> rollerModels = [];
   DateTime? lastUpdated;
 
+  Timer? updateTimer;
+
   @override
   void initState() {
     super.initState();
@@ -62,7 +64,11 @@ class _MainPageState extends State<MainPage> {
           rollerModels = value;
           lastUpdated = DateTime.now();
 
-          Timer(Duration(seconds: config.watchIntervalSeconds),
+          if (updateTimer != null && updateTimer!.isActive) {
+            updateTimer!.cancel();
+          }
+
+          updateTimer = Timer(Duration(seconds: config.watchIntervalSeconds),
               () => fetchRollerData());
         }));
   }
@@ -89,7 +95,7 @@ class _MainPageState extends State<MainPage> {
         ],
       ),
       body: SelectionArea(child: Text(lastUpdated?.toString() ?? "Never")),
-      endDrawer: Drawer(child: SettingsWidget()),
+      endDrawer: const Drawer(child: SettingsWidget()),
     );
   }
 }

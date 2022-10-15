@@ -14,5 +14,8 @@ void main(List<String> arguments) {
     case RunMode.watch:
       console.watchSummary(config);
       break;
+    case RunMode.dump:
+      console.dump(config);
+      break;
   }
 }

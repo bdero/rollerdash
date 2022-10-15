@@ -8,7 +8,16 @@
             "name": "rollerdash",
             "request": "launch",
             "type": "dart",
-            "program": "bin/rollerdash.dart"
-        }
+            "program": "bin/rollerdash.dart",
+        },
+        {
+            "name": "rollerdash dump",
+            "request": "launch",
+            "type": "dart",
+            "program": "bin/rollerdash.dart",
+            "args": [
+                "dump"
+            ],
+        },
     ]
 }

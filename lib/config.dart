@@ -15,6 +15,7 @@ const defaultRollers = [
 enum RunMode {
   print,
   watch,
+  dump,
 }
 
 class Config {
@@ -28,19 +29,25 @@ class Config {
       ..addOption(
         'time',
         abbr: 't',
-        help: 'The interval to wait between watch updates',
+        help:
+            'The interval to wait between watch updates. Only applies to the `watch` command.',
         valueHelp: 'seconds',
         defaultsTo: '30',
       );
 
     final parser = ArgParser()
       ..addCommand('watch', watchParser)
+      ..addCommand('dump')
       ..addFlag('help',
           abbr: 'h', help: 'Print this help message.', negatable: false);
 
     void printUsage() {
-      print('Usage: rollerdash [watch]\n');
+      print('\nUsage: rollerdash [WATCH|DUMP]\n');
       print('Fetch the status of Flutter\'s rollers.\n');
+      print(
+          'WATCH: Run the program indefinitely, updating the status at a set interval.');
+      print(
+          'DUMP: Dump the data returned by the roller RPCs to stdout and exit.\n');
       print(parser.usage);
       print(watchParser.usage);
     }
@@ -60,10 +67,15 @@ class Config {
       exit(0);
     }
 
-    if (parsedArgs.command?.name == 'watch') {
-      result.runMode = RunMode.watch;
-      result.watchIntervalSeconds =
-          int.tryParse(parsedArgs.command?['time']) ?? 30;
+    switch (parsedArgs.command?.name) {
+      case 'watch':
+        result.runMode = RunMode.watch;
+        result.watchIntervalSeconds =
+            int.tryParse(parsedArgs.command?['time']) ?? 30;
+        break;
+      case 'dump':
+        result.runMode = RunMode.dump;
+        break;
     }
 
     return result;

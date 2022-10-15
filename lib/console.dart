@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:timeago/timeago.dart' as timeago;
@@ -110,4 +112,17 @@ void watchSummary(Config config) async {
 
     sleep(Duration(seconds: config.watchIntervalSeconds));
   }
+}
+
+void dump(Config config) async {
+  var results = <Future<Map<String, dynamic>>>[];
+  for (var id in config.rollers) {
+    results.add(getStatusRaw(id));
+  }
+  var data = await Future.wait(results);
+
+  var encoder = JsonEncoder.withIndent('  ');
+  print(encoder.convert(data));
+
+  inspect(data);
 }

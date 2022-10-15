@@ -14,7 +14,7 @@ Future<List<StatusModel>> getAllStatuses(List<String> rollerIds) async {
   return await Future.wait(results);
 }
 
-Future<StatusModel> getStatus(String rollerId) async {
+Future<Map<String, dynamic>> getStatusRaw(String rollerId) async {
   // curl https://autoroll.skia.org/twirp/autoroll.rpc.AutoRollService/GetStatus
   //      -X POST -H "Content-Type: application/json; charset=UTF-8"
   //      -d '{"roller_id": "skia-flutter-autoroll"}'
@@ -24,9 +24,9 @@ Future<StatusModel> getStatus(String rollerId) async {
   var random = Random();
   Duration delay(double seconds) {
     var ms = seconds * 1000;
-    return Duration(
-        milliseconds: (ms + random.nextDouble() * ms * 0.3) ~/ 2);
+    return Duration(milliseconds: (ms + random.nextDouble() * ms * 0.3) ~/ 2);
   }
+
   var client = RetryClient.withDelays(http.Client(), [
     delay(1),
     delay(2),
@@ -52,6 +52,10 @@ Future<StatusModel> getStatus(String rollerId) async {
 
   client.close();
 
-  Map<String, dynamic> result = jsonDecode(response.body);
-  return StatusModel.fromJson(result['status']);
+  return jsonDecode(response.body);
+}
+
+Future<StatusModel> getStatus(String rollerId) async {
+  var raw = getStatusRaw(rollerId);
+  return raw.then((value) => StatusModel.fromJson(value['status']));
 }

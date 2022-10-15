@@ -80,7 +80,7 @@ Future<void> printSummary(Config config) async {
       line +=
           "${(' ' + decorateTimestamp(roll.created, false)).padLeft(33, '━')} ┃ "
           "${decorateResult(roll.result, false)} ┃ "
-          "${roll.rolling_from.substring(0, 13) + ' ⟶   ' + roll.rolling_to.substring(0, 13)} ┃ "
+          "${roll.rolling_from_hash.substring(0, 13) + ' ⟶   ' + roll.rolling_to_hash.substring(0, 13)} ┃ "
           "${status.issue_url_base + roll.id}";
       print(line);
 

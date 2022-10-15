@@ -1,6 +1,16 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:json_annotation/json_annotation.dart';
 
 part 'schema.g.dart';
+
+/// Strips qualifier from the revision line if present.
+String toRevisionValue(String value) {
+  if (value.startsWith('git_revision:')) {
+    return value.substring(13);
+  }
+  return value;
+}
 
 @JsonSerializable()
 class StatusModel {
@@ -54,6 +64,14 @@ class MiniStatusModel {
 class RollModel {
   final String id, result, subject, rolling_to, rolling_from, created, modified;
   final List<JobModel> try_jobs;
+
+  get rolling_to_hash {
+    return toRevisionValue(rolling_to);
+  }
+
+  get rolling_from_hash {
+    return toRevisionValue(rolling_from);
+  }
 
   RollModel({
     required this.id,

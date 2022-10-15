@@ -32,4 +32,4 @@ Fetch the status of Flutter's rollers.
 
 When making any changes to `schema.dart`, run `dart run build_runner build` to regenerate `schema.g.dart`.
 
-To help with debugging data discrepancies, the raw data returned by the roller RPCs can be easily dumped as pretty printed JSON with `rollerdash dump > dump.json`.
+To help with debugging data discrepancies, the raw data returned by the roller RPCs can be easily dumped as pretty printed JSON with `dart run bin/rollerdash.dart dump > dump.json`.

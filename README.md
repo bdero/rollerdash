@@ -4,6 +4,7 @@ A simple client for querying the Skia AutoRoll service.
 ![Summary screenshot](screenshots/summary.png)
 
 ## Quick start
+
 ```bash
 git clone https://github.com/bdero/rollerdash.git
 cd rollerdash

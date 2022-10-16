@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rollerdash/fetch.dart' as rd_fetch;
 import 'package:rollerdash/schema.dart';
 import 'package:rollerdash_gui/settings.dart';
@@ -87,16 +88,34 @@ class _MainPageState extends State<MainPage> {
       refreshing = true;
     });
 
-    rd_fetch
-        .getAllStatuses(RollerdashSettings.of(context).config.rollers)
-        .then((value) => setState(() {
-              refreshing = false;
+    Future<List<StatusModel>> fetchRollers() {
+      return rd_fetch
+          .getAllStatuses(RollerdashSettings.of(context).config.rollers)
+          .onError((error, stackTrace) {
+        final errorMessage = "$error\n\n$stackTrace";
+        debugPrint(errorMessage);
 
-              rollerModels = value;
-              lastUpdated = DateTime.now();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          duration: const Duration(seconds: 10),
+          content: SelectableText(errorMessage),
+          action: SnackBarAction(
+              label: "Copy",
+              onPressed: () =>
+                  Clipboard.setData(ClipboardData(text: errorMessage))),
+        ));
 
-              resetUpdateTimer();
-            }));
+        return fetchRollers();
+      });
+    }
+
+    fetchRollers().then((value) => setState(() {
+          refreshing = false;
+
+          rollerModels = value;
+          lastUpdated = DateTime.now();
+
+          resetUpdateTimer();
+        }));
   }
 
   @override

@@ -13,17 +13,17 @@ class _SettingsWidgetState extends State<SettingsWidget> {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        const DrawerHeader(
-            child: Text(
-              "Settings",
-              style: TextStyle(fontSize: 24),
-            )),
+        const ListTile(
+            title: Text(
+          "Settings",
+          style: TextStyle(fontSize: 16),
+        )),
         ListTile(
           title: DropdownButtonFormField(
             decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.timer),
-                labelText: "Refresh interval",
-                filled: true),
+              prefixIcon: Icon(Icons.timer),
+              labelText: "Refresh interval",
+            ),
             items: const [
               DropdownMenuItem(value: 5, child: Text("5 seconds")),
               DropdownMenuItem(value: 10, child: Text("10 seconds")),

@@ -1,12 +1,16 @@
 import 'dart:async';
 
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:rollerdash/fetch.dart' as rd_fetch;
 import 'package:rollerdash/schema.dart';
 import 'package:rollerdash_gui/settings.dart';
 import 'package:rollerdash_gui/settings_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 void main() {
   runApp(const RollerdashApp());
@@ -57,7 +61,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   bool refreshing = false;
 
-  List<StatusModel> rollerModels = [];
+  List<StatusModel> rollerStatuses = [];
   DateTime? lastUpdated;
 
   Timer? updateTimer;
@@ -128,7 +132,7 @@ class _MainPageState extends State<MainPage> {
     fetchRollers().then((value) => setState(() {
           refreshing = false;
 
-          rollerModels = value;
+          rollerStatuses = value;
           lastUpdated = DateTime.now();
 
           resetUpdateTimer();
@@ -167,7 +171,43 @@ class _MainPageState extends State<MainPage> {
         ],
       ),
       endDrawer: const Drawer(child: SettingsWidget()),
-      body: Text(lastUpdated?.toString() ?? "Never"),
+      body: ListView(children: [
+        SingleChildScrollView(
+            child: Column(
+          children: [
+            Text("Last update: ${lastUpdated?.toLocal() ?? "Never"}"),
+            Table(
+              children: [
+                for (final status in rollerStatuses)
+                  TableRow(
+                    children: [
+                      TableCell(
+                        child: GestureDetector(
+                          child: Text(status.mini_status.roller_id),
+                          onTap: () async {
+                            final url = Uri.parse(
+                                'https://autoroll.skia.org/r/${status.mini_status.roller_id}');
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url);
+                            } else {
+                              throw Exception("Unable to open URL: $url");
+                            }
+                          },
+                        ),
+                      ),
+                      TableCell(child: Text(status.recent_rolls[0].result)),
+                      TableCell(child: Text(status.mini_status.mode)),
+                      TableCell(
+                        child: Text(
+                            'Behind: ${status.mini_status.num_behind} commit${status.mini_status.num_behind == 1 ? " " : "s"}'),
+                      ),
+                    ],
+                  )
+              ],
+            )
+          ],
+        ))
+      ]),
     );
   }
 }

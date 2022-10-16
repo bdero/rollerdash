@@ -16,6 +16,7 @@ dependencies:
     sdk: flutter
   rollerdash:
     path: ../
+  url_launcher: ^6.1.6
 
 dev_dependencies:
   flutter_test:

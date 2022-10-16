@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:rollerdash/config.dart' as rd_config;
 import 'package:rollerdash/fetch.dart' as rd_fetch;
 import 'package:rollerdash/schema.dart';
+import 'package:rollerdash_gui/settings.dart';
+import 'package:rollerdash_gui/settings_widget.dart';
 
 void main() {
   runApp(const RollerdashApp());
@@ -25,69 +26,6 @@ class RollerdashApp extends StatelessWidget {
       ),
       home: const MainPage(),
     ));
-  }
-}
-
-class RollerdashSettings extends InheritedWidget {
-  const RollerdashSettings(
-      {super.key,
-      required super.child,
-      required this.config,
-      required this.publishConfig,
-      required this.subscribe});
-
-  final rd_config.Config config;
-  final ValueChanged<rd_config.Config> publishConfig;
-  final Function(ValueChanged<rd_config.Config> callback) subscribe;
-
-  static RollerdashSettings of(BuildContext context) {
-    final RollerdashSettings? result =
-        context.dependOnInheritedWidgetOfExactType<RollerdashSettings>();
-    assert(result != null, 'No RollerdashSettings found in context.');
-    return result!;
-  }
-
-  @override
-  bool updateShouldNotify(RollerdashSettings oldWidget) =>
-      config.watchIntervalSeconds != oldWidget.config.watchIntervalSeconds ||
-      config.rollers != oldWidget.config.rollers;
-}
-
-class RollerdashSettingsWrapper extends StatefulWidget {
-  const RollerdashSettingsWrapper({super.key, required this.child});
-
-  final Widget child;
-
-  @override
-  State<RollerdashSettingsWrapper> createState() =>
-      _RollerdashSettingsWrapperState();
-}
-
-class _RollerdashSettingsWrapperState extends State<RollerdashSettingsWrapper> {
-  rd_config.Config config = rd_config.Config();
-  List<ValueChanged<rd_config.Config>> configSubscriptions = [];
-
-  void publishConfig(rd_config.Config config_) {
-    setState(() {
-      config = config_;
-      for (var callback in configSubscriptions) {
-        callback(config_);
-      }
-    });
-  }
-
-  void subscribe(ValueChanged<rd_config.Config> callback) {
-    configSubscriptions.add(callback);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return RollerdashSettings(
-      config: config,
-      publishConfig: publishConfig,
-      subscribe: subscribe,
-      child: widget.child,
-    );
   }
 }
 
@@ -192,57 +130,8 @@ class _MainPageState extends State<MainPage> {
           })
         ],
       ),
-      body: SelectionArea(child: Text(lastUpdated?.toString() ?? "Never")),
       endDrawer: const Drawer(child: SettingsWidget()),
-    );
-  }
-}
-
-class SettingsWidget extends StatefulWidget {
-  const SettingsWidget({super.key});
-
-  @override
-  State<SettingsWidget> createState() => _SettingsWidgetState();
-}
-
-class _SettingsWidgetState extends State<SettingsWidget> {
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      child: ListView(
-        children: [
-          DrawerHeader(
-              decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  border: Border.all(width: 0)),
-              child: const Text(
-                "Settings",
-                style: TextStyle(fontSize: 24),
-              )),
-          ListTile(
-            title: DropdownButtonFormField(
-              decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.timer),
-                  labelText: "Refresh interval",
-                  filled: true),
-              items: const [
-                DropdownMenuItem(value: 5, child: Text("5 seconds")),
-                DropdownMenuItem(value: 10, child: Text("10 seconds")),
-                DropdownMenuItem(value: 30, child: Text("30 seconds")),
-                DropdownMenuItem(value: 60, child: Text("1 minute")),
-                DropdownMenuItem(value: 300, child: Text("5 minutes")),
-                DropdownMenuItem(value: 600, child: Text("10 minutes")),
-              ],
-              onChanged: (value) {
-                var settings = RollerdashSettings.of(context);
-                settings.config.watchIntervalSeconds = value!;
-                settings.publishConfig(settings.config);
-              },
-              value: RollerdashSettings.of(context).config.watchIntervalSeconds,
-            ),
-          ),
-        ],
-      ),
+      body: Text(lastUpdated?.toString() ?? "Never"),
     );
   }
 }

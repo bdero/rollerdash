@@ -11,6 +11,7 @@ environment:
   sdk: '>=2.19.0-297.0.dev <3.0.0'
 
 dependencies:
+  dynamic_color: ^1.5.4
   flutter:
     sdk: flutter
   rollerdash:

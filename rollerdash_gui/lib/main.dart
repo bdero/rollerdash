@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rollerdash/fetch.dart' as rd_fetch;
@@ -17,16 +18,32 @@ class RollerdashApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RollerdashSettingsWrapper(
-        child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Rollerdash',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-        brightness: Brightness.dark,
-      ),
-      home: const MainPage(),
-    ));
+        child: DynamicColorBuilder(builder: (lightDynamic, darkDynamic) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Rollerdash',
+        theme: ThemeData(
+            colorScheme: lightDynamic ??
+                ColorScheme.fromSwatch(
+                  primarySwatch: Colors.blue,
+                  brightness: Brightness.light,
+                ),
+            useMaterial3: true
+            //brightness: Brightness.dark,
+            ),
+        darkTheme: ThemeData(
+            colorScheme: darkDynamic ??
+                ColorScheme.fromSwatch(
+                  primarySwatch: Colors.blue,
+                  brightness: Brightness.dark,
+                ),
+            useMaterial3: true
+            //brightness: Brightness.dark,
+            ),
+        themeMode: ThemeMode.system,
+        home: const MainPage(),
+      );
+    }));
   }
 }
 

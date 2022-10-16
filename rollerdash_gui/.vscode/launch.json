@@ -5,19 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "CLI Debug",
+            "name": "GUI Debug",
             "request": "launch",
-            "type": "dart",
-            "program": "bin/rollerdash.dart",
+            "type": "dart"
         },
         {
-            "name": "CLI Dump Debug",
+            "name": "GUI Profile",
             "request": "launch",
             "type": "dart",
-            "program": "bin/rollerdash.dart",
-            "args": [
-                "dump"
-            ],
+            "flutterMode": "profile"
         },
+        {
+            "name": "GUI Release",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
     ]
 }

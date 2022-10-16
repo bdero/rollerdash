@@ -1,0 +1,13 @@
+{
+    "folders": [
+        {
+            "path": "rollerdash_gui",
+            "name": "Rollerdash GUI"
+        },
+        {
+            "path": ".",
+            "name": "Rollerdash CLI"
+        }
+    ],
+    "settings": {},
+}

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dynamic_color/dynamic_color.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -8,6 +9,7 @@ import 'package:rollerdash/fetch.dart' as rd_fetch;
 import 'package:rollerdash/schema.dart';
 import 'package:rollerdash_gui/settings.dart';
 import 'package:rollerdash_gui/settings_widget.dart';
+import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void main() {
@@ -162,13 +164,37 @@ class _MainPageState extends State<MainPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Rollerdash",
+              'Rollerdash',
               textAlign: TextAlign.left,
             ),
-            Text(
-              "Last polled: ${lastUpdated?.toLocal() ?? "Never"}",
-              style: TextStyle(
-                  fontSize: 14, color: Theme.of(context).secondaryHeaderColor),
+            Row(
+              children: [
+                Text(
+                  'Last polled ',
+                  style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).secondaryHeaderColor),
+                ),
+                if (lastUpdated != null)
+                  Timeago(
+                    builder: (context, value) {
+                      return Text(
+                        value,
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context).secondaryHeaderColor),
+                      );
+                    },
+                    date: lastUpdated!,
+                    refreshRate: const Duration(seconds: 1),
+                  ),
+                Text(
+                  '.',
+                  style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).secondaryHeaderColor),
+                ),
+              ],
             ),
           ],
         ),
@@ -384,14 +410,58 @@ class Roller extends StatelessWidget {
                         width: 2,
                         color: Theme.of(context).scaffoldBackgroundColor)),
               ),
-              child: Column(
+              child: Table(
+                columnWidths: const {
+                  0: FixedColumnWidth(35),
+                  1: FixedColumnWidth(140),
+                  2: FixedColumnWidth(140),
+                },
                 children: [
-                  Container(child: Text(status.recent_rolls[0].result)),
-                  Container(child: Text(status.mini_status.mode)),
-                  Container(
-                    child: Text(
-                        'Behind: ${status.mini_status.num_behind} commit${status.mini_status.num_behind == 1 ? " " : "s"}'),
-                  ),
+                  for (final roll in status.recent_rolls)
+                    TableRow(
+                      children: [
+                        const TableCell(child: Icon(Icons.error_outline)),
+                        TableCell(
+                          child: Timeago(
+                            builder: (context, value) {
+                              return Text(
+                                value,
+                                textAlign: TextAlign.right,
+                              );
+                            },
+                            date: DateTime.parse(roll.created),
+                            refreshRate: const Duration(minutes: 1),
+                          ),
+                        ),
+                        TableCell(
+                          child: Text(
+                            roll.result,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        TableCell(
+                          child: Row(
+                            children: [
+                              Text(
+                                roll.rolling_from_hash.substring(0, 13),
+                                style: const TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontFamilyFallback: ['Courier'],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_outlined),
+                              Text(
+                                roll.rolling_to_hash.substring(0, 13),
+                                style: const TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontFamilyFallback: ['Courier'],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
                 ],
               ),
             )

@@ -16,6 +16,7 @@ dependencies:
     sdk: flutter
   rollerdash:
     path: ../
+  timeago_flutter: ^1.2.0
   url_launcher: ^6.1.6
 
 dev_dependencies:

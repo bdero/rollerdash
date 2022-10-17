@@ -156,10 +156,6 @@ class _MainPageState extends State<MainPage> {
             icon: const Icon(Icons.refresh),
           );
 
-    var expandableHSL =
-        HSLColor.fromColor(Theme.of(context).dialogBackgroundColor);
-    expandableHSL = expandableHSL.withLightness(expandableHSL.lightness);
-
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -170,8 +166,9 @@ class _MainPageState extends State<MainPage> {
               textAlign: TextAlign.left,
             ),
             Text(
-              "Last polled ${lastUpdated?.toLocal() ?? "Never"}",
-              style: const TextStyle(fontSize: 14),
+              "Last polled: ${lastUpdated?.toLocal() ?? "Never"}",
+              style: TextStyle(
+                  fontSize: 14, color: Theme.of(context).secondaryHeaderColor),
             ),
           ],
         ),
@@ -185,90 +182,152 @@ class _MainPageState extends State<MainPage> {
         ],
       ),
       endDrawer: const Drawer(child: SettingsWidget()),
-      body: ListView(
-        children: [
-          for (final status in rollerStatuses)
-            Container(
-              margin: const EdgeInsets.all(10),
-              child: Container(
-                //color: Color.fromARGB(200, 255, 255, 255),
-                child: Material(
-                  color: expandableHSL.toColor(),
-                  clipBehavior: Clip.antiAlias,
-                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                  child: ExpansionTile(
-                    title: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(status.mini_status.roller_id),
-                              const Chip(
-                                avatar: Icon(
-                                  Icons.refresh,
-                                  color: Colors.black,
-                                ),
-                                label: Text(
-                                  "In Progress",
-                                  style: TextStyle(
-                                      fontSize: 10, color: Colors.black),
-                                ),
-                                backgroundColor: Color(0xFFFFFF00),
-                                side: BorderSide.none,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(100)),
-                                ),
-                              ),
-                            ],
+      body: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            for (final status in rollerStatuses) Roller(status: status),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class Roller extends StatelessWidget {
+  const Roller({Key? key, required this.status}) : super(key: key);
+
+  final StatusModel status;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(10),
+      child: Material(
+        color: Theme.of(context).dialogBackgroundColor,
+        clipBehavior: Clip.antiAlias,
+        borderRadius: const BorderRadius.all(Radius.circular(35)),
+        child: ExpansionTile(
+          shape: Border.all(width: 0, color: Colors.transparent),
+          title: Row(
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(right: 12.0),
+                child: Icon(Icons.error_outline, color: Colors.red),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(status.mini_status.roller_id),
+                    Wrap(
+                      spacing: 10,
+                      children: const [
+                        Chip(
+                          visualDensity:
+                              VisualDensity(horizontal: 0, vertical: -4),
+                          avatar: SizedBox(
+                            width: 10,
+                            height: 10,
+                            child: CircularProgressIndicator(
+                              color: Colors.black,
+                              strokeWidth: 3,
+                            ),
+                          ),
+                          label: Text(
+                            "In Progress",
+                            style: TextStyle(fontSize: 12, color: Colors.black),
+                          ),
+                          backgroundColor: Colors.yellow,
+                          side: BorderSide.none,
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(100)),
                           ),
                         ),
-                        ElevatedButton.icon(
-                          onPressed: () async {
-                            final url = Uri.parse(
-                                'https://autoroll.skia.org/r/${status.mini_status.roller_id}');
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url);
-                            } else {
-                              throw Exception("Unable to open URL: $url");
-                            }
-                          },
-                          icon: const Icon(Icons.arrow_outward_rounded),
-                          label: const Text("View Roller"),
+                        Chip(
+                          visualDensity:
+                              VisualDensity(horizontal: 0, vertical: -4),
+                          avatar: Icon(
+                            Icons.rocket_launch_outlined,
+                            color: Colors.black,
+                          ),
+                          label: Text(
+                            "Running",
+                            style: TextStyle(fontSize: 12, color: Colors.black),
+                          ),
+                          backgroundColor: Colors.green,
+                          side: BorderSide.none,
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(100)),
+                          ),
+                        ),
+                        Chip(
+                          visualDensity:
+                              VisualDensity(horizontal: 0, vertical: -4),
+                          avatar: Icon(
+                            Icons.commit_outlined,
+                            color: Colors.black,
+                          ),
+                          label: Text(
+                            "Behind 3 commits",
+                            style: TextStyle(fontSize: 12, color: Colors.black),
+                          ),
+                          backgroundColor: Colors.grey,
+                          side: BorderSide.none,
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(100)),
+                          ),
                         ),
                       ],
                     ),
-                    subtitle: Container(
-                      alignment: Alignment.centerLeft,
-                    ),
-                    children: [
-                      Container(
-                        child: GestureDetector(
-                          child: Text(status.mini_status.roller_id),
-                          onTap: () async {
-                            final url = Uri.parse(
-                                'https://autoroll.skia.org/r/${status.mini_status.roller_id}');
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url);
-                            } else {
-                              throw Exception("Unable to open URL: $url");
-                            }
-                          },
-                        ),
-                      ),
-                      Container(child: Text(status.recent_rolls[0].result)),
-                      Container(child: Text(status.mini_status.mode)),
-                      Container(
-                        child: Text(
-                            'Behind: ${status.mini_status.num_behind} commit${status.mini_status.num_behind == 1 ? " " : "s"}'),
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final url = Uri.parse(
+                      'https://autoroll.skia.org/r/${status.mini_status.roller_id}');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url);
+                  } else {
+                    throw Exception("Unable to open URL: $url");
+                  }
+                },
+                icon: const Icon(Icons.arrow_outward_rounded),
+                label: const Text("View Roller"),
+              ),
+            ],
+          ),
+          subtitle: Container(
+            alignment: Alignment.centerLeft,
+          ),
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                border: Border(
+                    top: BorderSide(
+                        width: 5,
+                        color: Theme.of(context).scaffoldBackgroundColor)),
+              ),
+              child: Column(
+                children: [
+                  Container(child: Text(status.recent_rolls[0].result)),
+                  Container(child: Text(status.mini_status.mode)),
+                  Container(
+                    child: Text(
+                        'Behind: ${status.mini_status.num_behind} commit${status.mini_status.num_behind == 1 ? " " : "s"}'),
+                  ),
+                ],
+              ),
             )
-        ],
+          ],
+        ),
       ),
     );
   }

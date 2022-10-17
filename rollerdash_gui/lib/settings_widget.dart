@@ -21,7 +21,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         ListTile(
           title: DropdownButtonFormField(
             decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.timer),
+              prefixIcon: Icon(Icons.timer_outlined),
               labelText: "Refresh interval",
             ),
             items: const [

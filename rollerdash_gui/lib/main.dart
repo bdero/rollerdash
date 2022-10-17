@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -10,7 +9,6 @@ import 'package:rollerdash/schema.dart';
 import 'package:rollerdash_gui/settings.dart';
 import 'package:rollerdash_gui/settings_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 void main() {
   runApp(const RollerdashApp());
@@ -158,9 +156,25 @@ class _MainPageState extends State<MainPage> {
             icon: const Icon(Icons.refresh),
           );
 
+    var expandableHSL =
+        HSLColor.fromColor(Theme.of(context).dialogBackgroundColor);
+    expandableHSL = expandableHSL.withLightness(expandableHSL.lightness);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Rollerdash"),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Rollerdash",
+              textAlign: TextAlign.left,
+            ),
+            Text(
+              "Last polled ${lastUpdated?.toLocal() ?? "Never"}",
+              style: const TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
         actions: [
           refreshButton,
           Builder(builder: (context) {
@@ -171,17 +185,65 @@ class _MainPageState extends State<MainPage> {
         ],
       ),
       endDrawer: const Drawer(child: SettingsWidget()),
-      body: ListView(children: [
-        SingleChildScrollView(
-            child: Column(
-          children: [
-            Text("Last update: ${lastUpdated?.toLocal() ?? "Never"}"),
-            Table(
-              children: [
-                for (final status in rollerStatuses)
-                  TableRow(
+      body: ListView(
+        children: [
+          for (final status in rollerStatuses)
+            Container(
+              margin: const EdgeInsets.all(10),
+              child: Container(
+                //color: Color.fromARGB(200, 255, 255, 255),
+                child: Material(
+                  color: expandableHSL.toColor(),
+                  clipBehavior: Clip.antiAlias,
+                  borderRadius: const BorderRadius.all(Radius.circular(20)),
+                  child: ExpansionTile(
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(status.mini_status.roller_id),
+                              const Chip(
+                                avatar: Icon(
+                                  Icons.refresh,
+                                  color: Colors.black,
+                                ),
+                                label: Text(
+                                  "In Progress",
+                                  style: TextStyle(
+                                      fontSize: 10, color: Colors.black),
+                                ),
+                                backgroundColor: Color(0xFFFFFF00),
+                                side: BorderSide.none,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(100)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            final url = Uri.parse(
+                                'https://autoroll.skia.org/r/${status.mini_status.roller_id}');
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url);
+                            } else {
+                              throw Exception("Unable to open URL: $url");
+                            }
+                          },
+                          icon: const Icon(Icons.arrow_outward_rounded),
+                          label: const Text("View Roller"),
+                        ),
+                      ],
+                    ),
+                    subtitle: Container(
+                      alignment: Alignment.centerLeft,
+                    ),
                     children: [
-                      TableCell(
+                      Container(
                         child: GestureDetector(
                           child: Text(status.mini_status.roller_id),
                           onTap: () async {
@@ -195,19 +257,19 @@ class _MainPageState extends State<MainPage> {
                           },
                         ),
                       ),
-                      TableCell(child: Text(status.recent_rolls[0].result)),
-                      TableCell(child: Text(status.mini_status.mode)),
-                      TableCell(
+                      Container(child: Text(status.recent_rolls[0].result)),
+                      Container(child: Text(status.mini_status.mode)),
+                      Container(
                         child: Text(
                             'Behind: ${status.mini_status.num_behind} commit${status.mini_status.num_behind == 1 ? " " : "s"}'),
                       ),
                     ],
-                  )
-              ],
+                  ),
+                ),
+              ),
             )
-          ],
-        ))
-      ]),
+        ],
+      ),
     );
   }
 }

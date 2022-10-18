@@ -157,7 +157,7 @@ class _MainPageState extends State<MainPage> {
         : IconButton(
             onPressed: () => fetchRollerData(),
             icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
+            tooltip: 'Poll rollers',
           );
 
     return Scaffold(
@@ -174,8 +174,7 @@ class _MainPageState extends State<MainPage> {
                 Text(
                   'Last polled ',
                   style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).secondaryHeaderColor),
+                      fontSize: 14, color: Theme.of(context).hintColor),
                 ),
                 if (lastUpdated != null)
                   Timeago(
@@ -183,19 +182,12 @@ class _MainPageState extends State<MainPage> {
                       return Text(
                         value,
                         style: TextStyle(
-                            fontSize: 14,
-                            color: Theme.of(context).secondaryHeaderColor),
+                            fontSize: 14, color: Theme.of(context).hintColor),
                       );
                     },
                     date: lastUpdated!,
                     refreshRate: const Duration(seconds: 1),
                   ),
-                Text(
-                  '.',
-                  style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).secondaryHeaderColor),
-                ),
               ],
             ),
           ],
@@ -320,11 +312,11 @@ class RollModeChip extends StatelessWidget {
       case 'RUNNING':
         modeText = 'Running';
         backgroundColor = Colors.green;
-        icon = Icons.rocket_launch_outlined;
+        icon = Icons.play_arrow;
         break;
       default: // STOPPED
-        modeText = 'Stopped';
-        backgroundColor = Colors.red;
+        modeText = 'Paused';
+        backgroundColor = Colors.orange;
         icon = Icons.pause_outlined;
         break;
     }
@@ -415,63 +407,61 @@ class Roller extends StatelessWidget {
         borderRadius: const BorderRadius.all(Radius.circular(20)),
         child: ExpansionTile(
           shape: Border.all(width: 0, color: Colors.transparent),
-          title: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0),
-                child: RollStatusIcon(status: status),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                        '${status.mini_status.child_name}   ( ${status.mini_status.roller_id} )'),
-                    Wrap(
-                      spacing: 10,
-                      children: [
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          width: 118,
-                          child: RollStatusChip(
-                              status: status.recent_rolls[0].result),
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          width: 118,
-                          child: RollModeChip(mode: status.mini_status.mode),
-                        ),
-                        RollerChip(
-                          avatar: const Icon(
-                            Icons.commit_outlined,
-                            color: Colors.black,
-                          ),
-                          label: Text(
-                            "Behind ${status.mini_status.num_behind} commit${status.mini_status.num_behind == 1 ? " " : "s"}",
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.black),
-                          ),
-                          backgroundColor: Colors.grey,
-                        ),
-                      ],
-                    ),
-                  ],
+          title: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 12, 30),
+                  child: RollStatusIcon(status: status),
                 ),
-              ),
-              ElevatedButton.icon(
-                onPressed: () async {
-                  final url = Uri.parse(
-                      'https://autoroll.skia.org/r/${status.mini_status.roller_id}');
-                  if (await canLaunchUrl(url)) {
-                    await launchUrl(url);
-                  } else {
-                    throw Exception("Unable to open URL: $url");
-                  }
-                },
-                icon: const Icon(Icons.arrow_outward_rounded),
-                label: const Text("View Roller"),
-              ),
-            ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          '${status.mini_status.child_name}   ( ${status.mini_status.roller_id} )'),
+                      Wrap(
+                        spacing: 10,
+                        children: [
+                          RollModeChip(mode: status.mini_status.mode),
+                          if (status.recent_rolls.isNotEmpty &&
+                              status.recent_rolls[0].result == 'IN_PROGRESS')
+                            RollStatusChip(
+                                status: status.recent_rolls[0].result),
+                          if (status.mini_status.num_behind.toInt() > 0)
+                            RollerChip(
+                              avatar: const Icon(
+                                Icons.commit_outlined,
+                                color: Colors.black,
+                              ),
+                              label: Text(
+                                "Behind ${status.mini_status.num_behind} commit${status.mini_status.num_behind == 1 ? " " : "s"}",
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.black),
+                              ),
+                              backgroundColor: Colors.grey,
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final url = Uri.parse(
+                        'https://autoroll.skia.org/r/${status.mini_status.roller_id}');
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url);
+                    } else {
+                      throw Exception("Unable to open URL: $url");
+                    }
+                  },
+                  icon: const Icon(Icons.arrow_outward_rounded),
+                  label: const Text("View Roller"),
+                ),
+              ],
+            ),
           ),
           subtitle: Container(
             alignment: Alignment.centerLeft,

@@ -9,6 +9,6 @@ In order to simplify migration upkeep, we forego version controlling most platfo
 ```bash
 cd rollerdash_gui
 flutter create .
-flutter pub upgrade
+flutter pub get
 flutter run
 ```

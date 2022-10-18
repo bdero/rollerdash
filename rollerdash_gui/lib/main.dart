@@ -9,6 +9,7 @@ import 'package:rollerdash/fetch.dart' as rd_fetch;
 import 'package:rollerdash/schema.dart';
 import 'package:rollerdash_gui/settings.dart';
 import 'package:rollerdash_gui/settings_widget.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -156,6 +157,7 @@ class _MainPageState extends State<MainPage> {
         : IconButton(
             onPressed: () => fetchRollerData(),
             icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh',
           );
 
     return Scaffold(
@@ -202,19 +204,24 @@ class _MainPageState extends State<MainPage> {
           refreshButton,
           Builder(builder: (context) {
             return IconButton(
-                onPressed: () => Scaffold.of(context).openEndDrawer(),
-                icon: const Icon(Icons.settings));
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+              icon: const Icon(Icons.settings),
+              tooltip: 'Settings',
+            );
           })
         ],
       ),
       endDrawer: const Drawer(child: SettingsWidget()),
       body: Container(
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: ListView(
           shrinkWrap: true,
           children: [
-            for (final status in rollerStatuses) Roller(status: status),
+            for (final status in rollerStatuses)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Roller(status: status),
+              ),
           ],
         ),
       ),
@@ -235,6 +242,7 @@ class RollerChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Chip(
       visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+      materialTapTargetSize: MaterialTapTargetSize.padded,
       avatar: avatar,
       label: label,
       backgroundColor: backgroundColor,
@@ -335,6 +343,58 @@ class RollModeChip extends StatelessWidget {
   }
 }
 
+/// Displays an icon indicating whether the last completed roll was successful
+/// or not.
+class RollStatusIcon extends StatelessWidget {
+  const RollStatusIcon({Key? key, required this.status}) : super(key: key);
+
+  final StatusModel status;
+
+  @override
+  Widget build(BuildContext context) {
+    // Find the first roll entry that isn't in-progress.
+    try {
+      final roll = status.recent_rolls
+          .firstWhere((roll) => roll.result != 'IN_PROGRESS');
+      switch (roll.result) {
+        case 'SUCCESS':
+          return Tooltip(
+            message:
+                'Last success: ${timeago.format(DateTime.parse(roll.created))}',
+            child: const Icon(
+              Icons.check_outlined,
+              color: Colors.green,
+            ),
+          );
+        case 'FAILURE':
+          return Tooltip(
+            message:
+                'Last failure: ${timeago.format(DateTime.parse(roll.created))}',
+            child: const Icon(
+              Icons.error_outline,
+              color: Colors.red,
+            ),
+          );
+        default:
+          debugPrint(
+              'Unexpected roll status for ${status.mini_status.roller_id}: ${roll.result}');
+          break;
+      }
+    } on StateError {
+      debugPrint(
+          'No completed roll found for ${status.mini_status.roller_id}.');
+    }
+
+    return const Tooltip(
+      message: 'This roller is in an inknown state!',
+      child: Icon(
+        Icons.question_mark,
+        color: Colors.yellow,
+      ),
+    );
+  }
+}
+
 class Roller extends StatelessWidget {
   const Roller({Key? key, required this.status}) : super(key: key);
 
@@ -342,30 +402,45 @@ class Roller extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final separatorHSL =
+        HSLColor.fromColor(Theme.of(context).dialogBackgroundColor);
+    final headerSeparatorColor =
+        separatorHSL.withLightness(separatorHSL.lightness + 0.03).toColor();
+
     return Container(
-      margin: const EdgeInsets.all(10),
+      margin: const EdgeInsets.all(5),
       child: Material(
         color: Theme.of(context).dialogBackgroundColor,
         clipBehavior: Clip.antiAlias,
-        borderRadius: const BorderRadius.all(Radius.circular(35)),
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
         child: ExpansionTile(
           shape: Border.all(width: 0, color: Colors.transparent),
           title: Row(
             children: [
-              const Padding(
-                padding: EdgeInsets.only(right: 12.0),
-                child: Icon(Icons.error_outline, color: Colors.red),
+              Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: RollStatusIcon(status: status),
               ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(status.mini_status.roller_id),
+                    Text(
+                        '${status.mini_status.child_name}   ( ${status.mini_status.roller_id} )'),
                     Wrap(
                       spacing: 10,
                       children: [
-                        RollStatusChip(status: status.recent_rolls[0].result),
-                        RollModeChip(mode: status.mini_status.mode),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          width: 118,
+                          child: RollStatusChip(
+                              status: status.recent_rolls[0].result),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          width: 118,
+                          child: RollModeChip(mode: status.mini_status.mode),
+                        ),
                         RollerChip(
                           avatar: const Icon(
                             Icons.commit_outlined,
@@ -406,52 +481,62 @@ class Roller extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 border: Border(
-                    top: BorderSide(
-                        width: 2,
-                        color: Theme.of(context).scaffoldBackgroundColor)),
+                  top: BorderSide(
+                    width: 2,
+                    color: headerSeparatorColor,
+                  ),
+                ),
               ),
+              padding: const EdgeInsets.fromLTRB(52, 5, 52, 5),
               child: Table(
                 columnWidths: const {
-                  0: FixedColumnWidth(35),
-                  1: FixedColumnWidth(140),
-                  2: FixedColumnWidth(140),
+                  0: FixedColumnWidth(118), // Status
+                  2: IntrinsicColumnWidth(),
                 },
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                 children: [
                   for (final roll in status.recent_rolls)
                     TableRow(
                       children: [
-                        const TableCell(child: Icon(Icons.error_outline)),
                         TableCell(
-                          child: Timeago(
-                            builder: (context, value) {
-                              return Text(
-                                value,
-                                textAlign: TextAlign.right,
-                              );
-                            },
-                            date: DateTime.parse(roll.created),
-                            refreshRate: const Duration(minutes: 1),
-                          ),
-                        ),
-                        TableCell(
-                          child: Text(
-                            roll.result,
-                            textAlign: TextAlign.center,
+                          child: Container(
+                            alignment: Alignment.centerLeft,
+                            child: RollStatusChip(
+                              status: roll.result,
+                            ),
                           ),
                         ),
                         TableCell(
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                roll.rolling_from_hash.substring(0, 13),
+                              Container(
+                                width: 170,
+                                padding: const EdgeInsets.fromLTRB(0, 0, 60, 2),
+                                child: Timeago(
+                                  builder: (context, value) {
+                                    return Text(
+                                      value,
+                                      textAlign: TextAlign.center,
+                                    );
+                                  },
+                                  date: DateTime.parse(roll.created),
+                                  refreshRate: const Duration(minutes: 1),
+                                ),
+                              ),
+                              SelectableText(
+                                roll.rolling_from_hash.substring(0, 10),
                                 style: const TextStyle(
                                   fontFamily: 'monospace',
                                   fontFamilyFallback: ['Courier'],
                                 ),
                               ),
-                              const Icon(Icons.arrow_forward_outlined),
-                              Text(
-                                roll.rolling_to_hash.substring(0, 13),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Icon(Icons.forward_outlined),
+                              ),
+                              SelectableText(
+                                roll.rolling_to_hash.substring(0, 10),
                                 style: const TextStyle(
                                   fontFamily: 'monospace',
                                   fontFamilyFallback: ['Courier'],
@@ -459,7 +544,25 @@ class Roller extends StatelessWidget {
                               ),
                             ],
                           ),
-                        )
+                        ),
+                        TableCell(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final url =
+                                    Uri.parse(status.issue_url_base + roll.id);
+                                if (await canLaunchUrl(url)) {
+                                  await launchUrl(url);
+                                } else {
+                                  throw Exception("Unable to open URL: $url");
+                                }
+                              },
+                              icon: const Icon(Icons.arrow_outward_rounded),
+                              label: Text('PR ${roll.id}'),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                 ],

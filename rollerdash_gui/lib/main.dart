@@ -207,6 +207,7 @@ class _MainPageState extends State<MainPage> {
       body: Container(
         alignment: Alignment.center,
         child: ListView(
+          physics: const BouncingScrollPhysics(),
           shrinkWrap: true,
           children: [
             for (final status in rollerStatuses)
@@ -387,11 +388,16 @@ class RollStatusIcon extends StatelessWidget {
   }
 }
 
-class Roller extends StatelessWidget {
+class Roller extends StatefulWidget {
   const Roller({Key? key, required this.status}) : super(key: key);
 
   final StatusModel status;
 
+  @override
+  State<Roller> createState() => _RollerState();
+}
+
+class _RollerState extends State<Roller> {
   @override
   Widget build(BuildContext context) {
     final separatorHSL =
@@ -406,6 +412,7 @@ class Roller extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         borderRadius: const BorderRadius.all(Radius.circular(20)),
         child: ExpansionTile(
+          key: PageStorageKey(widget.status.mini_status.roller_id),
           shape: Border.all(width: 0, color: Colors.transparent),
           title: Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
@@ -413,30 +420,31 @@ class Roller extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 0, 12, 30),
-                  child: RollStatusIcon(status: status),
+                  child: RollStatusIcon(status: widget.status),
                 ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                          '${status.mini_status.child_name}   ( ${status.mini_status.roller_id} )'),
+                          '${widget.status.mini_status.child_name}   ( ${widget.status.mini_status.roller_id} )'),
                       Wrap(
                         spacing: 10,
                         children: [
-                          RollModeChip(mode: status.mini_status.mode),
-                          if (status.recent_rolls.isNotEmpty &&
-                              status.recent_rolls[0].result == 'IN_PROGRESS')
+                          RollModeChip(mode: widget.status.mini_status.mode),
+                          if (widget.status.recent_rolls.isNotEmpty &&
+                              widget.status.recent_rolls[0].result ==
+                                  'IN_PROGRESS')
                             RollStatusChip(
-                                status: status.recent_rolls[0].result),
-                          if (status.mini_status.num_behind.toInt() > 0)
+                                status: widget.status.recent_rolls[0].result),
+                          if (widget.status.mini_status.num_behind.toInt() > 0)
                             RollerChip(
                               avatar: const Icon(
                                 Icons.commit_outlined,
                                 color: Colors.black,
                               ),
                               label: Text(
-                                "Behind ${status.mini_status.num_behind} commit${status.mini_status.num_behind == 1 ? " " : "s"}",
+                                "Behind ${widget.status.mini_status.num_behind} commit${widget.status.mini_status.num_behind == 1 ? " " : "s"}",
                                 style: const TextStyle(
                                     fontSize: 12, color: Colors.black),
                               ),
@@ -450,7 +458,7 @@ class Roller extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () async {
                     final url = Uri.parse(
-                        'https://autoroll.skia.org/r/${status.mini_status.roller_id}');
+                        'https://autoroll.skia.org/r/${widget.status.mini_status.roller_id}');
                     if (await canLaunchUrl(url)) {
                       await launchUrl(url);
                     } else {
@@ -485,7 +493,7 @@ class Roller extends StatelessWidget {
                 },
                 defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                 children: [
-                  for (final roll in status.recent_rolls)
+                  for (final roll in widget.status.recent_rolls)
                     TableRow(
                       children: [
                         TableCell(
@@ -514,7 +522,8 @@ class Roller extends StatelessWidget {
                                   refreshRate: const Duration(minutes: 1),
                                 ),
                               ),
-                              SelectableText(
+                              // TODO(bdero): This should be SelectableText, but an obscure key-related error happens with the PageStorageKey is present on the ExpansionTile.
+                              Text(
                                 roll.rolling_from_hash.substring(0, 10),
                                 style: const TextStyle(
                                   fontFamily: 'monospace',
@@ -525,7 +534,7 @@ class Roller extends StatelessWidget {
                                 padding: EdgeInsets.symmetric(horizontal: 8.0),
                                 child: Icon(Icons.forward_outlined),
                               ),
-                              SelectableText(
+                              Text(
                                 roll.rolling_to_hash.substring(0, 10),
                                 style: const TextStyle(
                                   fontFamily: 'monospace',
@@ -540,8 +549,8 @@ class Roller extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 4.0),
                             child: ElevatedButton.icon(
                               onPressed: () async {
-                                final url =
-                                    Uri.parse(status.issue_url_base + roll.id);
+                                final url = Uri.parse(
+                                    widget.status.issue_url_base + roll.id);
                                 if (await canLaunchUrl(url)) {
                                   await launchUrl(url);
                                 } else {

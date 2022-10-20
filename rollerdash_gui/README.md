@@ -1,5 +1,7 @@
 # Rollerdash GUI
 
+![GUI screenshot](../screenshots/gui.png)
+
 > **_NOTE:_** This Flutter application is intended to run against the [master channel](https://github.com/flutter/flutter/wiki/Flutter-build-release-channels#flutters-channels) and is updated on an as-needed basis.
 
 ## Quick start

@@ -47,6 +47,9 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Don't ignore the web build gh-pages submodule
+!build/web
+
 # Symbolication related
 app.*.symbols
 

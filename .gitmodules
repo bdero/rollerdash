@@ -1,0 +1,4 @@
+[submodule "rollerdash_gui/build/web"]
+	path = rollerdash_gui/build/web
+	url = git@github.com:bdero/rollerdash.git
+	branch = gh-pages

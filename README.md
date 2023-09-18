@@ -5,6 +5,12 @@ A simple client for querying the Skia AutoRoll service.
 
 ## Quick start
 
+Rollerdash has a [GUI version](rollerdash_gui/README.md) hosted at https://bdero.me/rollerdash.
+
+![GUI screenshot](screenshots/gui.png)
+
+## Running the CLI
+
 ```bash
 git clone https://github.com/bdero/rollerdash.git
 cd rollerdash

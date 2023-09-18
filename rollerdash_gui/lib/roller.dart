@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'package:rollerdash/schema.dart';
@@ -131,9 +133,30 @@ class _RollerState extends State<Roller> {
                                 padding: const EdgeInsets.fromLTRB(0, 0, 60, 2),
                                 child: Timeago(
                                   builder: (context, value) {
+                                    var secondsSinceRollCreated = DateTime.now()
+                                        .difference(
+                                            DateTime.parse(roll.created))
+                                        .inSeconds;
+                                    var inProgress =
+                                        roll.result == "IN_PROGRESS";
+                                    var textColor = Color.lerp(
+                                        Colors.white,
+                                        inProgress ? Colors.red : Colors.grey,
+                                        clampDouble(
+                                            secondsSinceRollCreated.toDouble() /
+                                                60.0 /
+                                                60.0 /
+                                                24.0,
+                                            0,
+                                            1))!;
                                     return Text(
                                       value,
                                       textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          color: textColor,
+                                          fontWeight: inProgress
+                                              ? FontWeight.bold
+                                              : FontWeight.normal),
                                     );
                                   },
                                   date: DateTime.parse(roll.created),

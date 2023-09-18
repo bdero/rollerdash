@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:rollerdash/schema.dart';
+import 'package:rollerdash_gui/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 /// Displays an icon indicating whether the last completed roll was successful
@@ -14,6 +15,11 @@ class RollStatusIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     // Find the first roll entry that isn't in-progress.
     try {
+      // Display an amber warning icon if the most recent roll has been
+      // in-progress for 5 hours or more.
+      var warningOverride = status.recent_rolls.isNotEmpty &&
+          status.recent_rolls.first.result == 'IN_PROGRESS' &&
+          secondsSinceRollCreated(status.recent_rolls.first) >= 60 * 60 * 5;
       final roll = status.recent_rolls
           .firstWhere((roll) => roll.result != 'IN_PROGRESS');
       switch (roll.result) {
@@ -21,9 +27,11 @@ class RollStatusIcon extends StatelessWidget {
           return Tooltip(
             message:
                 'Last success: ${timeago.format(DateTime.parse(roll.created))}',
-            child: const Icon(
-              Icons.check_outlined,
-              color: Colors.green,
+            child: Icon(
+              warningOverride
+                  ? Icons.warning_amber_outlined
+                  : Icons.check_outlined,
+              color: warningOverride ? Colors.amber : Colors.green,
             ),
           );
         case 'FAILURE':

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:rollerdash/schema.dart';
 import 'package:rollerdash_gui/roll_status_icon.dart';
 import 'package:rollerdash_gui/roller_chip.dart';
+import 'package:rollerdash_gui/utils.dart';
 import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -133,20 +134,14 @@ class _RollerState extends State<Roller> {
                                 padding: const EdgeInsets.fromLTRB(0, 0, 60, 2),
                                 child: Timeago(
                                   builder: (context, value) {
-                                    var secondsSinceRollCreated = DateTime.now()
-                                        .difference(
-                                            DateTime.parse(roll.created))
-                                        .inSeconds;
+                                    var seconds = secondsSinceRollCreated(roll);
                                     var inProgress =
                                         roll.result == "IN_PROGRESS";
                                     var textColor = Color.lerp(
                                         Colors.white,
                                         inProgress ? Colors.red : Colors.grey,
                                         clampDouble(
-                                            secondsSinceRollCreated.toDouble() /
-                                                60.0 /
-                                                60.0 /
-                                                24.0,
+                                            seconds / 60.0 / 60.0 / 24.0,
                                             0,
                                             1))!;
                                     return Text(

@@ -27,24 +27,11 @@ class RollerdashApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Rollerdash',
         theme: ThemeData(
-            colorScheme: lightDynamic ??
-                ColorScheme.fromSwatch(
-                  primarySwatch: Colors.blue,
-                  brightness: Brightness.light,
-                ),
-            useMaterial3: true
-            //brightness: Brightness.dark,
-            ),
-        darkTheme: ThemeData(
-            colorScheme: darkDynamic ??
-                ColorScheme.fromSwatch(
-                  primarySwatch: Colors.blue,
-                  brightness: Brightness.dark,
-                ),
-            useMaterial3: true
-            //brightness: Brightness.dark,
-            ),
-        themeMode: ThemeMode.system,
+          primarySwatch: Colors.blue,
+          useMaterial3: true,
+          brightness: Brightness.dark,
+        ),
+        themeMode: ThemeMode.dark,
         home: const MainPage(),
       );
     }));

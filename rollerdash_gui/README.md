@@ -15,3 +15,37 @@ flutter pub upgrade
 flutter pub get
 flutter run
 ```
+
+## Deployment
+
+Rollerdash is deployed to GitHub pages and is accessible via https://bdero.me/rollerdash/.
+The `gh-pages` branch containes the deployed web build.
+
+> [!NOTE]
+> For convenience, `build/web/` is a submodule pointing to `gh-pages`.
+
+### Deployment instructions
+
+```bash
+# 1. Initialize/update git submodules.
+git submodule update --init --recursive
+
+# 2. Check out the gh-pages branch and clear the currently deployed build.
+pushd ./build/web
+git checkout gh-pages
+rm -r ./*
+popd
+
+# 3. Clean and re-build the web target.
+flutter build web --base-href="/rollerdash/" --release
+
+# 4. Commit and push the new deployment to gh-pages.
+pushd ./build/web
+git commit -m "Bump deployment"
+git push origin gh-pages
+popd
+```
+
+Once the new version is pushed to `gh-pages`:
+1. Navigate to https://github.com/bdero/rollerdash/actions and wait for the new deployment action to complete.
+2. Smoke test https://bdero.me/rollerdash/ and revert the new gh-pages commit if there's a problem.

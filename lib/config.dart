@@ -8,7 +8,7 @@ const defaultRollers = [
   "dart-sdk-flutter-engine",
   "flutter-engine-flutter-autoroll",
   "fuchsia-linux-sdk-flutter-engine",
-  "fuchsia-mac-sdk-flutter-engine",
+  "fuchsia-gn-sdk-flutter-engine",
   "angle-flutter-engine",
 ];
 

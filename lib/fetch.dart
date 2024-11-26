@@ -69,5 +69,17 @@ Future<Map<String, dynamic>> getStatusRaw(String rollerId) async {
 
 Future<StatusModel> getStatus(String rollerId) async {
   var raw = getStatusRaw(rollerId);
-  return raw.then((value) => StatusModel.fromJson(value['status']));
+  return raw.then((value) {
+    if (!value.containsKey('status')) {
+      String error = 'Failed to get roller status for id `$rollerId`.';
+      if (value.containsKey('code')) {
+        error += ' code=${value['code'] as String}';
+      }
+      if (value.containsKey('msg')) {
+        error += ' msg="${value['msg'] as String}"';
+      }
+      throw Exception(error);
+    }
+    return StatusModel.fromJson(value['status']);
+  });
 }
